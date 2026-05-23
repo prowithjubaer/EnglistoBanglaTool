@@ -1,0 +1,15 @@
+'use client'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+export default function StudentDashboard() {
+  const [data, setData] = useState<any>(null)
+  useEffect(() => { fetch('/api/student/dashboard').then(r=>r.json()).then(setData) }, [])
+  if (!data) return <div className="text-center py-10 bangla-text text-gray-500">লোড হচ্ছে...</div>
+  const { stats, homework, badges, savedVocabCount, weakItemsCount } = data
+  return (<div className="space-y-6">
+    <div className="bg-gradient-to-r from-navy to-navy-light rounded-2xl p-6 text-white"><h1 className="text-2xl font-bold bangla-text mb-1">স্বাগতম! 👋</h1><p className="text-gray-200 bangla-text text-sm">আজকের প্র্যাকটিস শুরু করুন</p><div className="flex gap-3 mt-4 flex-wrap"><Link href="/student/practice" className="px-4 py-2 bg-brand-red rounded-lg text-sm font-bold bangla-text">✍️ প্র্যাকটিস শুরু করুন</Link><Link href="/student/homework" className="px-4 py-2 bg-white/20 rounded-lg text-sm font-bold bangla-text">📋 হোমওয়ার্ক</Link></div></div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{[{icon:'✅',label:'সম্পন্ন',val:stats.totalCompleted},{icon:'⭐',label:'গড় স্কোর',val:`${Math.round(stats.averageScore)}%`},{icon:'🔥',label:'স্ট্রিক',val:`${stats.currentStreak} দিন`},{icon:'💎',label:'পয়েন্ট',val:stats.totalPoints}].map((s,i)=>(<div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-border text-center card-hover"><div className="text-2xl mb-1">{s.icon}</div><div className="text-xl font-bold text-navy">{s.val}</div><div className="text-xs text-gray-500 bangla-text">{s.label}</div></div>))}</div>
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-border"><h3 className="font-bold text-navy bangla-text mb-3">📋 হোমওয়ার্ক</h3>{homework.length===0?<p className="text-gray-500 text-sm bangla-text">কোনো হোমওয়ার্ক নেই</p>:<div className="space-y-3">{homework.slice(0,3).map((hw:any)=>(<div key={hw.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"><div><p className="font-medium text-navy text-sm">{hw.title}</p><p className="text-xs text-gray-500 bangla-text">{hw.completedTasks}/{hw.totalTasks} সম্পন্ন</p></div>{hw.isComplete?<span className="text-green-600 text-sm font-bold">✓</span>:<Link href={`/student/practice?homeworkId=${hw.id}`} className="px-3 py-1 bg-navy text-white text-xs rounded-lg bangla-text">শুরু</Link>}</div>))}</div>}</div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{[{href:'/student/review',icon:'⚠️',label:'দুর্বল',val:weakItemsCount},{href:'/student/vocabulary',icon:'📖',label:'শব্দ',val:savedVocabCount},{href:'/student/badges',icon:'🏆',label:'ব্যাজ',val:badges.length},{href:'/student/progress',icon:'📊',label:'বেস্ট স্ট্রিক',val:`${stats.bestStreak}d`}].map((a,i)=>(<Link key={i} href={a.href} className="bg-white rounded-xl p-4 shadow-sm border border-gray-border text-center card-hover block"><div className="text-2xl mb-1">{a.icon}</div><div className="text-lg font-bold text-navy">{a.val}</div><div className="text-xs text-gray-500 bangla-text">{a.label}</div></Link>))}</div>
+  </div>)
+}

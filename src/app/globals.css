@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-navy: #1e3a5f;
+  --color-navy-light: #2d5a8e;
+  --color-navy-dark: #0f1f33;
+  --color-brand-red: #dc2626;
+  --color-brand-red-light: #ef4444;
+  --color-gray-bg: #f8f9fa;
+  --color-gray-card: #ffffff;
+  --color-gray-border: #e5e7eb;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: #f8f9fa;
+  color: #1e3a5f;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+.bangla-text {
+  font-family: 'Noto Sans Bengali', 'Kalpurush', 'SolaimanLipi', sans-serif;
+  line-height: 1.8;
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.1);
+}

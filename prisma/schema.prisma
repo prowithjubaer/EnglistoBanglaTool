@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          String   @default("student")
+  batchId       String?
+  status        String   @default("active")
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  batch         Batch?   @relation(fields: [batchId], references: [id])
+  submissions   Submission[]
+  savedVocab    SavedVocabulary[]
+  difficultItems DifficultItem[]
+  reviewLater   ReviewLater[]
+  studentBadges StudentBadge[]
+  studentStats  StudentStats?
+  homeworkAssignments HomeworkAssignment[]
+}
+
+model Batch {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  students    User[]
+  homeworkAssignments HomeworkAssignment[]
+}
+
+model Level {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int      @default(0)
+  difficulty  String   @default("easy")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+}
+
+model Task {
+  id                  String   @id @default(cuid())
+  englishText         String
+  banglaTranslation   String
+  levelId             String
+  categoryId          String
+  difficulty          String   @default("easy")
+  estimatedTime       Int?
+  explanation         String?
+  grammarNote         String?
+  importantPhraseNote String?
+  status              String   @default("published")
+  createdBy           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  level               Level    @relation(fields: [levelId], references: [id])
+  category            Category @relation(fields: [categoryId], references: [id])
+  vocabulary          Vocabulary[]
+  submissions         Submission[]
+  homeworkTasks       HomeworkTask[]
+  difficultItems      DifficultItem[]
+  reviewLater         ReviewLater[]
+}
+
+model Vocabulary {
+  id            String   @id @default(cuid())
+  taskId        String
+  wordOrPhrase  String
+  banglaMeaning String
+  example       String?
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  savedBy       SavedVocabulary[]
+}
+
+model Homework {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String?
+  assignedType        String   @default("all")
+  startDate           DateTime?
+  deadline            DateTime?
+  passingAverageScore Int      @default(70)
+  status              String   @default("draft")
+  createdBy           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  tasks               HomeworkTask[]
+  assignments         HomeworkAssignment[]
+  submissions         Submission[]
+}
+
+model HomeworkAssignment {
+  id          String   @id @default(cuid())
+  homeworkId  String
+  studentId   String?
+  batchId     String?
+  createdAt   DateTime @default(now())
+  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  student     User?    @relation(fields: [studentId], references: [id])
+  batch       Batch?   @relation(fields: [batchId], references: [id])
+}
+
+model HomeworkTask {
+  id          String   @id @default(cuid())
+  homeworkId  String
+  taskId      String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  task        Task     @relation(fields: [taskId], references: [id])
+}
+
+model Submission {
+  id                String   @id @default(cuid())
+  studentId         String
+  taskId            String
+  homeworkId        String?
+  studentAnswer     String
+  selfScore         Int?
+  points            Int      @default(0)
+  xp                Int      @default(0)
+  difficultyFeedback String?
+  retryCount        Int      @default(0)
+  submittedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  student           User     @relation(fields: [studentId], references: [id])
+  task              Task     @relation(fields: [taskId], references: [id])
+  homework          Homework? @relation(fields: [homeworkId], references: [id])
+}
+
+model SavedVocabulary {
+  id           String   @id @default(cuid())
+  studentId    String
+  vocabularyId String
+  createdAt    DateTime @default(now())
+  student      User       @relation(fields: [studentId], references: [id])
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id])
+  @@unique([studentId, vocabularyId])
+}
+
+model DifficultItem {
+  id        String   @id @default(cuid())
+  studentId String
+  taskId    String
+  createdAt DateTime @default(now())
+  student   User @relation(fields: [studentId], references: [id])
+  task      Task @relation(fields: [taskId], references: [id])
+  @@unique([studentId, taskId])
+}
+
+model ReviewLater {
+  id        String   @id @default(cuid())
+  studentId String
+  taskId    String
+  createdAt DateTime @default(now())
+  student   User @relation(fields: [studentId], references: [id])
+  task      Task @relation(fields: [taskId], references: [id])
+  @@unique([studentId, taskId])
+}
+
+model Badge {
+  id             String   @id @default(cuid())
+  name           String
+  description    String
+  icon           String   @default("🏆")
+  conditionType  String
+  conditionValue Int      @default(1)
+  createdAt      DateTime @default(now())
+  studentBadges  StudentBadge[]
+}
+
+model StudentBadge {
+  id        String   @id @default(cuid())
+  studentId String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+  student   User  @relation(fields: [studentId], references: [id])
+  badge     Badge @relation(fields: [badgeId], references: [id])
+  @@unique([studentId, badgeId])
+}
+
+model StudentStats {
+  id              String   @id @default(cuid())
+  studentId       String   @unique
+  totalCompleted  Int      @default(0)
+  averageScore    Float    @default(0)
+  totalPoints     Int      @default(0)
+  totalXp         Int      @default(0)
+  currentStreak   Int      @default(0)
+  bestStreak      Int      @default(0)
+  currentLevelId  String?
+  lastPracticeDate DateTime?
+  updatedAt       DateTime @updatedAt
+  student         User @relation(fields: [studentId], references: [id])
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
